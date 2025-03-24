@@ -67,7 +67,7 @@ export const loginUser = async (req, res) => {
     if (!existingUser) {
       return res
         .status(404)
-        .json({ success: false, message: "User not found" });
+        .json({ success: false, message: "Invalid email or password" });
     }
 
     // Compare password with hashed password
@@ -75,14 +75,14 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid credentials" });
+        .json({ success: false, message: "Invalid email or password" });
     }
 
     // Generate JWT Token
     const token = jwt.sign(
       { id: existingUser._id, role: existingUser.role },
       process.env.JWT_SECRET,
-      { expiresIn: "30d" } // Token valid for 30 days
+      { expiresIn: "30d" }
     );
 
     // Send response
@@ -91,6 +91,26 @@ export const loginUser = async (req, res) => {
       message: "Login successful",
       token,
       role: existingUser.role,
+      user: {
+        id: existingUser._id,
+        name: existingUser.name,
+        email: existingUser.email,
+        role: existingUser.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Logout User
+export const logoutUser = async (req, res) => {
+  try {
+    // Since we're using JWT, we don't need to do anything server-side
+    // The client should remove the token from storage
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
